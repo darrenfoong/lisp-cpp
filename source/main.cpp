@@ -1,12 +1,15 @@
 #include <iostream>
 #include <string>
 
-#include "lib.hpp"
+#include "interpreter.hpp"
 
 auto main() -> int
 {
-  auto const lib = library {};
-  auto const message = "Hello from " + lib.name + "!";
-  std::cout << message << '\n';
+  const std::string program = "(begin (define r 10) (* pi (* r r)))";
+  auto tokens = interpreter::lex(program);
+  auto ast = interpreter::parse(tokens);
+  auto const output = interpreter::eval();
+  std::cout << output << '\n';
+
   return 0;
 }

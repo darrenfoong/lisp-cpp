@@ -16,7 +16,7 @@ include(cmake/variables.cmake)
 
 add_library(
     executable_lib OBJECT
-    source/lib.cpp
+    source/interpreter.cpp
 )
 
 target_include_directories(
