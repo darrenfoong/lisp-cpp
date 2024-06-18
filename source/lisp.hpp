@@ -9,7 +9,7 @@ using number = std::variant<int, double>;
 using atom = std::variant<symbol, number>;
 
 // hack for recursive data type
-struct list
+struct list  // NOLINT(misc-no-recursion)
 {
   // actually std::vector<expr> elems
   std::vector<std::variant<atom, list>> elems;
