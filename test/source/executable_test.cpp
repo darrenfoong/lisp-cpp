@@ -1,10 +1,7 @@
 #include <iostream>
 
 #include "interpreter.hpp"
-
-// TODO remove
-auto pretty_print_tokens(const std::vector<std::string>& tokens) -> std::string;
-auto pretty_print(const lisp::expr& expr, const int depth = 0) -> std::string;
+#include "print.hpp"
 
 auto main() -> int
 {
