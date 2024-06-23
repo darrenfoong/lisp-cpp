@@ -76,6 +76,17 @@ auto pretty_print(const lisp::expr& expr, const int depth) -> std::string
   return oss.str();
 }
 
+// NOLINTNEXTLINE(misc-no-recursion)
+auto pretty_print(const lisp::exprfunc& exprfunc, const int depth)
+    -> std::string
+{
+  if (std::holds_alternative<lisp::expr>(exprfunc)) {
+    return pretty_print(std::get<lisp::expr>(exprfunc), depth);
+  } else {
+    return "[func]";
+  }
+}
+
 auto indent(const int depth) -> std::string
 {
   std::ostringstream oss;

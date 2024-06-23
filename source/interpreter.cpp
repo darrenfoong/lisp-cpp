@@ -1,9 +1,11 @@
 #include <algorithm>
 #include <iostream>
 #include <iterator>
+#include <optional>
 #include <regex>
 #include <sstream>
 #include <stdexcept>
+#include <variant>
 #include <vector>
 
 #include "interpreter.hpp"
@@ -13,6 +15,7 @@ constexpr std::string_view rparen = ")";
 
 auto split(const std::string& input) -> std::vector<std::string>;
 auto make_atom(const std::string& token) -> lisp::atom;
+auto get_symbol(const lisp::expr& expr) -> std::optional<std::string>;
 
 auto interpreter::lex(const std::string& program) -> std::vector<std::string>
 {
@@ -61,14 +64,132 @@ auto interpreter::parse(std::vector<std::string>& tokens) -> lisp::expr
   return res;
 }
 
-auto interpreter::eval(lisp::expr& ast, lisp::env& env) -> std::string
+// NOLINTNEXTLINE(misc-no-recursion, readability-function-cognitive-complexity)
+auto interpreter::eval(lisp::expr& ast, lisp::env& env) -> lisp::exprfunc
 {
-  return "Hello world!";
+  if (const auto* atom_p = std::get_if<lisp::atom>(&ast)) {
+    // atom
+    if (const auto* symbol_p = std::get_if<lisp::symbol>(atom_p)) {
+      // symbol
+      auto var_kv = env.find(*symbol_p);
+
+      if (var_kv == env.end()) {
+        throw std::invalid_argument("invalid variable: " + *symbol_p);
+      }
+
+      return var_kv->second;
+    } else {
+      // number
+      return ast;
+    }
+  } else if (const auto* list_p = std::get_if<lisp::list>(&ast)) {
+    // list
+    auto list = list_p->elems;
+
+    if (list.empty()) {
+      // empty list
+      return ast;
+    }
+
+    auto symbol_opt = get_symbol(list[0]);
+
+    if (symbol_opt) {
+      auto symbol = symbol_opt.value();
+
+      if (symbol == "begin") {
+        lisp::exprfunc eval_res;
+        for (std::size_t i = 1; i < list.size(); i++) {
+          eval_res = eval(list[i], env);
+        }
+        // return last eval_res
+        return eval_res;
+      } else if (symbol == "define") {
+        if (list.size() == 3) {
+          if (const auto* var_atom_p = std::get_if<lisp::atom>(&list[1])) {
+            if (const auto* var_symbol_p =
+                    std::get_if<lisp::symbol>(var_atom_p))
+            {
+              env[*var_symbol_p] = eval(list[2], env);
+
+              return lisp::exprfunc {};
+            }
+          }
+        }
+
+        throw std::invalid_argument("invalid define expr");
+      }
+    }
+
+    // func application
+    auto exprfunc = eval(list[0], env);
+
+    if (const auto* func_p = std::get_if<lisp::func>(&exprfunc)) {
+      std::vector<lisp::expr> args;
+
+      for (std::size_t i = 1; i < list.size(); i++) {
+        auto eval_res = eval(list[i], env);
+        if (const auto* expr_p = std::get_if<lisp::expr>(&eval_res)) {
+          args.emplace_back(*expr_p);
+        } else {
+          throw std::invalid_argument("invalid arg: [func]");
+        }
+      }
+
+      return (*func_p)(args);
+    } else {
+      throw std::invalid_argument("invalid head of list: not a [func]");
+    }
+
+  } else {
+    throw std::invalid_argument("invalid expr");
+  }
 }
 
 auto interpreter::make_env() -> lisp::env
 {
   lisp::env env;
+
+  env["pi"] = lisp::exprfunc {lisp::expr {lisp::atom {lisp::number {3.14159}}}};
+  env["*"] = lisp::exprfunc {
+      [](const std::vector<lisp::expr>& args)
+      {
+        if (args.size() != 2) {
+          throw std::invalid_argument("invalid num of args: "
+                                      + std::to_string(args.size()));
+        }
+
+        double arg0, arg1;
+        // TODO int
+        // TODO error handling
+
+        if (const auto* arg0_atom_p = std::get_if<lisp::atom>(&args[0])) {
+          if (const auto* arg0_number_p =
+                  std::get_if<lisp::number>(arg0_atom_p)) {
+            if (const auto* arg0_double_p = std::get_if<double>(arg0_number_p))
+            {
+              arg0 = *arg0_double_p;
+            } else if (const auto* arg0_int_p = std::get_if<int>(arg0_number_p))
+            {
+              arg0 = static_cast<double>(*arg0_int_p);
+            }
+          }
+        }
+
+        if (const auto* arg1_atom_p = std::get_if<lisp::atom>(&args[1])) {
+          if (const auto* arg1_number_p =
+                  std::get_if<lisp::number>(arg1_atom_p)) {
+            if (const auto* arg1_double_p = std::get_if<double>(arg1_number_p))
+            {
+              arg1 = *arg1_double_p;
+            } else if (const auto* arg1_int_p = std::get_if<int>(arg1_number_p))
+            {
+              arg1 = static_cast<double>(*arg1_int_p);
+            }
+          }
+        }
+
+        return lisp::expr {lisp::atom {lisp::number {arg0 * arg1}}};
+      }};
 
   return env;
 }
@@ -86,12 +207,23 @@ auto make_atom(const std::string& token) -> lisp::atom
   try {
     int i = std::stoi(token);  // NOLINT(readability-identifier-length)
     return lisp::atom {lisp::number {i}};
-  } catch (std::invalid_argument const& ex) {
+  } catch (const std::invalid_argument& ex) {
     try {
       double d = std::stod(token);  // NOLINT(readability-identifier-length)
       return lisp::atom {lisp::number {d}};
-    } catch (std::invalid_argument const& ex2) {
+    } catch (const std::invalid_argument& ex2) {
       return lisp::atom {token};
     }
   }
+}
+
+auto get_symbol(const lisp::expr& expr) -> std::optional<std::string>
+{
+  if (const auto* atom_p = std::get_if<lisp::atom>(&expr)) {
+    if (const auto* symbol_p = std::get_if<lisp::symbol>(atom_p)) {
+      return *symbol_p;
+    }
+  }
+
+  return std::nullopt;
 }

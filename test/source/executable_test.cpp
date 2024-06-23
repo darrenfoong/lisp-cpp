@@ -14,5 +14,13 @@ auto main() -> int
 
   std::cout << pretty_print(ast) << std::endl;
 
+  auto env = interpreter::make_env();
+
+  std::cout << "Evaluating..." << std::endl;
+
+  auto output = interpreter::eval(ast, env);
+
+  std::cout << pretty_print(output) << std::endl;
+
   return 1;
 }

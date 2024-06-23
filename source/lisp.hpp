@@ -3,6 +3,7 @@
 #include <functional>
 #include <unordered_map>
 #include <variant>
+#include <vector>
 
 namespace lisp
 {
@@ -18,6 +19,7 @@ struct list  // NOLINT(misc-no-recursion)
 };
 
 using expr = std::variant<atom, list>;
-using func = std::function<expr(expr)>;
-using env = std::unordered_map<std::string, std::variant<expr, func>>;
+using func = std::function<expr(std::vector<expr>&)>;
+using exprfunc = std::variant<expr, func>;
+using env = std::unordered_map<std::string, exprfunc>;
 }  // namespace lisp
