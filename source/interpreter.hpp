@@ -10,5 +10,6 @@ class interpreter
 public:
   static auto lex(const std::string& program) -> std::vector<std::string>;
   static auto parse(std::vector<std::string>& tokens) -> lisp::expr;
-  static auto eval(lisp::expr& ast) -> std::string;
+  static auto eval(lisp::expr& ast, lisp::env& env) -> std::string;
+  static auto make_env() -> lisp::env;
 };

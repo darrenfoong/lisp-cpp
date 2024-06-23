@@ -61,9 +61,16 @@ auto interpreter::parse(std::vector<std::string>& tokens) -> lisp::expr
   return res;
 }
 
-auto interpreter::eval(lisp::expr& ast) -> std::string
+auto interpreter::eval(lisp::expr& ast, lisp::env& env) -> std::string
 {
   return "Hello world!";
+}
+
+auto interpreter::make_env() -> lisp::env
+{
+  lisp::env env;
+
+  return env;
 }
 
 auto split(const std::string& input) -> std::vector<std::string>
