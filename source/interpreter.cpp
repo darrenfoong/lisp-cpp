@@ -76,6 +76,15 @@ auto split(const std::string& input) -> std::vector<std::string>
 
 auto make_atom(const std::string& token) -> lisp::atom
 {
-  // TODO
-  return lisp::atom {token};
+  try {
+    int i = std::stoi(token);  // NOLINT(readability-identifier-length)
+    return lisp::atom {lisp::number {i}};
+  } catch (std::invalid_argument const& ex) {
+    try {
+      double d = std::stod(token);  // NOLINT(readability-identifier-length)
+      return lisp::atom {lisp::number {d}};
+    } catch (std::invalid_argument const& ex2) {
+      return lisp::atom {token};
+    }
+  }
 }
