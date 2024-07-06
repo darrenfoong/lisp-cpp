@@ -21,17 +21,16 @@ auto pretty_print(const lisp::atom& atom, const int depth) -> std::string
 {
   std::ostringstream oss;
 
-  if (std::holds_alternative<lisp::symbol>(atom)) {
+  if (const auto* symbol_p = std::get_if<lisp::symbol>(&atom)) {
     oss << indent(depth);
-    oss << std::get<lisp::symbol>(atom);
-  } else if (std::holds_alternative<lisp::number>(atom)) {
-    auto number = std::get<lisp::number>(atom);
-    if (std::holds_alternative<int>(number)) {
+    oss << *symbol_p;
+  } else if (const auto* number_p = std::get_if<lisp::number>(&atom)) {
+    if (const auto* int_p = std::get_if<int>(number_p)) {
       oss << indent(depth);
-      oss << std::get<int>(number);
-    } else if (std::holds_alternative<double>(number)) {
+      oss << *int_p;
+    } else if (const auto* double_p = std::get_if<double>(number_p)) {
       oss << indent(depth);
-      oss << std::get<double>(number);
+      oss << *double_p;
     } else {
       throw std::invalid_argument("invalid number");
     }
@@ -65,10 +64,10 @@ auto pretty_print(const lisp::expr& expr, const int depth) -> std::string
 {
   std::ostringstream oss;
 
-  if (std::holds_alternative<lisp::atom>(expr)) {
-    oss << pretty_print(std::get<lisp::atom>(expr), depth);
-  } else if (std::holds_alternative<lisp::list>(expr)) {
-    oss << pretty_print(std::get<lisp::list>(expr), depth);
+  if (const auto* atom_p = std::get_if<lisp::atom>(&expr)) {
+    oss << pretty_print(*atom_p, depth);
+  } else if (const auto* list_p = std::get_if<lisp::list>(&expr)) {
+    oss << pretty_print(*list_p, depth);
   } else {
     throw std::invalid_argument("invalid expr");
   }
@@ -80,8 +79,8 @@ auto pretty_print(const lisp::expr& expr, const int depth) -> std::string
 auto pretty_print(const lisp::exprfunc& exprfunc, const int depth)
     -> std::string
 {
-  if (std::holds_alternative<lisp::expr>(exprfunc)) {
-    return pretty_print(std::get<lisp::expr>(exprfunc), depth);
+  if (const auto* expr_p = std::get_if<lisp::expr>(&exprfunc)) {
+    return pretty_print(*expr_p, depth);
   } else {
     return "[func]";
   }
