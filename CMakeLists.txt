@@ -17,6 +17,7 @@ include(cmake/variables.cmake)
 add_library(
     executable_lib OBJECT
     source/interpreter.cpp
+    source/func.cpp
     source/print.cpp
 )
 
