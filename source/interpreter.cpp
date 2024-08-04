@@ -42,8 +42,6 @@ auto interpreter::parse(std::vector<std::string>& tokens) -> lisp::expr
   auto token = tokens.back();
   tokens.pop_back();
 
-  std::cout << "Processing token: " << token << std::endl;
-
   lisp::expr res;
 
   if (token == lparen) {
