@@ -151,6 +151,16 @@ auto interpreter::make_env() -> lisp::env
   lisp::env env;
 
   env["pi"] = lisp::exprfunc {lisp::expr {lisp::atom {lisp::number {3.14159}}}};
+  env["="] =
+      lisp::exprfunc {make_binary_op<double, double, bool>(std::equal_to<>())};
+  env[">"] =
+      lisp::exprfunc {make_binary_op<double, double, bool>(std::greater<>())};
+  env["<"] =
+      lisp::exprfunc {make_binary_op<double, double, bool>(std::less<>())};
+  env[">="] = lisp::exprfunc {
+      make_binary_op<double, double, bool>(std::greater_equal<>())};
+  env["<="] = lisp::exprfunc {
+      make_binary_op<double, double, bool>(std::less_equal<>())};
   env["+"] =
       lisp::exprfunc {make_binary_op<double, double, double>(std::plus<>())};
   env["-"] =

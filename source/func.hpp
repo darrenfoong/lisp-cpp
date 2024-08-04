@@ -16,6 +16,13 @@ inline auto parse_arg(const lisp::expr* arg) -> std::optional<T>
   return {};
 }
 
+template<typename R>
+// NOLINTNEXTLINE(misc-unused-parameters, clang-diagnostic-unused-parameter)
+inline auto make_res(R res) -> lisp::expr
+{
+  return {};
+}
+
 template<>
 inline auto parse_arg(const lisp::expr* arg) -> std::optional<double>
 {
@@ -30,6 +37,24 @@ inline auto parse_arg(const lisp::expr* arg) -> std::optional<double>
   }
 
   return {};
+}
+
+template<>
+inline auto make_res(double res) -> lisp::expr
+{
+  return lisp::expr {lisp::atom {lisp::number {res}}};
+}
+
+template<>
+inline auto make_res(bool res) -> lisp::expr
+{
+  // true is a list containing one element, 1
+  // false is an empty list
+  lisp::list list {};
+  if (res) {
+    list.elems.push_back(lisp::atom {lisp::number {1}});
+  }
+  return lisp::expr {list};
 }
 
 // NOLINTNEXTLINE(performance-unnecessary-value-param)
@@ -54,7 +79,6 @@ auto make_binary_op(std::function<R(const T&, const U&)> func) -> lisp::func
       throw std::invalid_argument("invalid arg: arg1");
     }
 
-    return lisp::expr {
-        lisp::atom {lisp::number {func(arg0_opt.value(), arg1_opt.value())}}};
+    return make_res<R>(func(arg0_opt.value(), arg1_opt.value()));
   };
 }
