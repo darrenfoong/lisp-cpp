@@ -82,3 +82,25 @@ auto make_binary_op(std::function<R(const T&, const U&)> func) -> lisp::func
     return make_res<R>(func(arg0_opt.value(), arg1_opt.value()));
   };
 }
+
+// NOLINTNEXTLINE(performance-unnecessary-value-param)
+template<typename T, typename R>
+auto make_unary_op(std::function<R(const T&)> func) -> lisp::func
+{
+  return [=](const std::vector<lisp::expr>& args)
+  {
+    if (args.size() != 1) {
+      throw std::invalid_argument("invalid num of args: "
+                                  + std::to_string(args.size()));
+    }
+
+    // NOLINTNEXTLINE(readability-container-data-pointer)
+    auto arg0_opt = parse_arg<T>(&args[0]);
+
+    if (!arg0_opt) {
+      throw std::invalid_argument("invalid arg: arg0");
+    }
+
+    return make_res<R>(func(arg0_opt.value()));
+  };
+}

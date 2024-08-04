@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cmath>
 #include <functional>
 #include <iostream>
 #include <iterator>
@@ -153,6 +154,7 @@ auto interpreter::make_env() -> lisp::env
   env["pi"] = lisp::exprfunc {lisp::expr {lisp::atom {lisp::number {3.14159}}}};
   env["="] =
       lisp::exprfunc {make_binary_op<double, double, bool>(std::equal_to<>())};
+  env["equal?"] = env["="];
   env[">"] =
       lisp::exprfunc {make_binary_op<double, double, bool>(std::greater<>())};
   env["<"] =
@@ -169,6 +171,12 @@ auto interpreter::make_env() -> lisp::env
       make_binary_op<double, double, double>(std::multiplies<>())};
   env["/"] =
       lisp::exprfunc {make_binary_op<double, double, double>(std::divides<>())};
+  env["expt"] = lisp::exprfunc {make_binary_op<double, double, double>(
+      [](double x, double y) { return std::pow(x, y); })};
+  env["abs"] = lisp::exprfunc {
+      make_unary_op<double, double>([](double x) { return std::abs(x); })};
+  env["round"] = lisp::exprfunc {
+      make_unary_op<double, double>([](double x) { return std::round(x); })};
 
   return env;
 }
