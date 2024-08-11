@@ -131,6 +131,58 @@ inline auto len(const std::vector<lisp::expr>& args) -> lisp::expr
     throw std::invalid_argument("invalid arg: arg0");
   }
 
-  return make_res(static_cast<double>(arg0_opt.value().elems.size()));
+  return make_res(static_cast<double>(arg0_opt->elems.size()));
+}
+
+inline auto car(const std::vector<lisp::expr>& args) -> lisp::expr
+{
+  if (args.size() != 1) {
+    throw std::invalid_argument("invalid num of args: "
+                                + std::to_string(args.size()));
+  }
+
+  // NOLINTNEXTLINE(readability-container-data-pointer)
+  auto arg0_opt = parse_arg<lisp::list>(&args[0]);
+
+  if (!arg0_opt) {
+    throw std::invalid_argument("invalid arg: arg0");
+  }
+
+  auto list = arg0_opt.value();
+
+  if (list.elems.empty()) {
+    return make_res<bool>(false);  // TODO
+  }
+
+  return list.elems[0];
+}
+
+inline auto cdr(const std::vector<lisp::expr>& args) -> lisp::expr
+{
+  if (args.size() != 1) {
+    throw std::invalid_argument("invalid num of args: "
+                                + std::to_string(args.size()));
+  }
+
+  // NOLINTNEXTLINE(readability-container-data-pointer)
+  auto arg0_opt = parse_arg<lisp::list>(&args[0]);
+
+  if (!arg0_opt) {
+    throw std::invalid_argument("invalid arg: arg0");
+  }
+
+  auto list = arg0_opt.value();
+
+  if (list.elems.empty()) {
+    return lisp::expr {lisp::list {}};
+  }
+
+  std::vector<lisp::expr> tail;
+
+  for (std::size_t i = 1; i < list.elems.size(); i++) {
+    tail.push_back(list.elems[i]);
+  }
+
+  return lisp::expr {lisp::list {tail}};
 }
 }  // namespace func

@@ -187,6 +187,8 @@ auto interpreter::make_env() -> lisp::env
   env["round"] = lisp::exprfunc {func::make_unary_op<double, double>(
       [](double x) { return std::round(x); })};
   env["len"] = lisp::exprfunc {func::len};
+  env["car"] = lisp::exprfunc {func::car};
+  env["cdr"] = lisp::exprfunc {func::cdr};
 
   return env;
 }
