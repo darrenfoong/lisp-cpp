@@ -9,6 +9,8 @@
 
 #include "lisp.hpp"
 
+namespace func
+{
 template<typename T>
 // NOLINTNEXTLINE(misc-unused-parameters, clang-diagnostic-unused-parameter)
 inline auto parse_arg(const lisp::expr* arg) -> std::optional<T>
@@ -115,8 +117,6 @@ auto make_unary_op(std::function<R(const T&)> func) -> lisp::func
   };
 }
 
-namespace func
-{
 inline auto len(const std::vector<lisp::expr>& args) -> lisp::expr
 {
   if (args.size() != 1) {

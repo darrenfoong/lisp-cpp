@@ -161,31 +161,31 @@ auto interpreter::make_env() -> lisp::env
   lisp::env env;
 
   env["pi"] = lisp::exprfunc {lisp::expr {lisp::atom {lisp::number {3.14159}}}};
-  env["="] =
-      lisp::exprfunc {make_binary_op<double, double, bool>(std::equal_to<>())};
+  env["="] = lisp::exprfunc {
+      func::make_binary_op<double, double, bool>(std::equal_to<>())};
   env["equal?"] = env["="];
-  env[">"] =
-      lisp::exprfunc {make_binary_op<double, double, bool>(std::greater<>())};
-  env["<"] =
-      lisp::exprfunc {make_binary_op<double, double, bool>(std::less<>())};
+  env[">"] = lisp::exprfunc {
+      func::make_binary_op<double, double, bool>(std::greater<>())};
+  env["<"] = lisp::exprfunc {
+      func::make_binary_op<double, double, bool>(std::less<>())};
   env[">="] = lisp::exprfunc {
-      make_binary_op<double, double, bool>(std::greater_equal<>())};
+      func::make_binary_op<double, double, bool>(std::greater_equal<>())};
   env["<="] = lisp::exprfunc {
-      make_binary_op<double, double, bool>(std::less_equal<>())};
-  env["+"] =
-      lisp::exprfunc {make_binary_op<double, double, double>(std::plus<>())};
-  env["-"] =
-      lisp::exprfunc {make_binary_op<double, double, double>(std::minus<>())};
+      func::make_binary_op<double, double, bool>(std::less_equal<>())};
+  env["+"] = lisp::exprfunc {
+      func::make_binary_op<double, double, double>(std::plus<>())};
+  env["-"] = lisp::exprfunc {
+      func::make_binary_op<double, double, double>(std::minus<>())};
   env["*"] = lisp::exprfunc {
-      make_binary_op<double, double, double>(std::multiplies<>())};
-  env["/"] =
-      lisp::exprfunc {make_binary_op<double, double, double>(std::divides<>())};
-  env["expt"] = lisp::exprfunc {make_binary_op<double, double, double>(
+      func::make_binary_op<double, double, double>(std::multiplies<>())};
+  env["/"] = lisp::exprfunc {
+      func::make_binary_op<double, double, double>(std::divides<>())};
+  env["expt"] = lisp::exprfunc {func::make_binary_op<double, double, double>(
       [](double x, double y) { return std::pow(x, y); })};
-  env["abs"] = lisp::exprfunc {
-      make_unary_op<double, double>([](double x) { return std::abs(x); })};
-  env["round"] = lisp::exprfunc {
-      make_unary_op<double, double>([](double x) { return std::round(x); })};
+  env["abs"] = lisp::exprfunc {func::make_unary_op<double, double>(
+      [](double x) { return std::abs(x); })};
+  env["round"] = lisp::exprfunc {func::make_unary_op<double, double>(
+      [](double x) { return std::round(x); })};
   env["len"] = lisp::exprfunc {func::len};
 
   return env;
