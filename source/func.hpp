@@ -40,6 +40,16 @@ inline auto parse_arg(const lisp::expr* arg) -> std::optional<double>
 }
 
 template<>
+inline auto parse_arg(const lisp::expr* arg) -> std::optional<lisp::list>
+{
+  if (const auto* arg_list_p = std::get_if<lisp::list>(arg)) {
+    return *arg_list_p;
+  }
+
+  return {};
+}
+
+template<>
 inline auto make_res(double res) -> lisp::expr
 {
   return lisp::expr {lisp::atom {lisp::number {res}}};
@@ -104,3 +114,23 @@ auto make_unary_op(std::function<R(const T&)> func) -> lisp::func
     return make_res<R>(func(arg0_opt.value()));
   };
 }
+
+namespace func
+{
+inline auto len(const std::vector<lisp::expr>& args) -> lisp::expr
+{
+  if (args.size() != 1) {
+    throw std::invalid_argument("invalid num of args: "
+                                + std::to_string(args.size()));
+  }
+
+  // NOLINTNEXTLINE(readability-container-data-pointer)
+  auto arg0_opt = parse_arg<lisp::list>(&args[0]);
+
+  if (!arg0_opt) {
+    throw std::invalid_argument("invalid arg: arg0");
+  }
+
+  return make_res(static_cast<double>(arg0_opt.value().elems.size()));
+}
+}  // namespace func

@@ -20,6 +20,7 @@ constexpr std::string_view rparen = ")";
 auto split(const std::string& input) -> std::vector<std::string>;
 auto make_atom(const std::string& token) -> lisp::atom;
 auto get_symbol(const lisp::expr& expr) -> std::optional<std::string>;
+auto get_number(const lisp::expr& expr) -> std::optional<lisp::number>;
 
 auto interpreter::lex(const std::string& program) -> std::vector<std::string>
 {
@@ -93,6 +94,7 @@ auto interpreter::eval(lisp::expr& ast, lisp::env& env) -> lisp::exprfunc
       return ast;
     }
 
+    // symbol
     auto symbol_opt = get_symbol(list[0]);
 
     if (symbol_opt) {
@@ -120,6 +122,13 @@ auto interpreter::eval(lisp::expr& ast, lisp::env& env) -> lisp::exprfunc
 
         throw std::invalid_argument("invalid define expr");
       }
+    }
+
+    // number
+    auto number_opt = get_number(list[0]);
+
+    if (number_opt) {
+      return ast;
     }
 
     // func application
@@ -177,6 +186,7 @@ auto interpreter::make_env() -> lisp::env
       make_unary_op<double, double>([](double x) { return std::abs(x); })};
   env["round"] = lisp::exprfunc {
       make_unary_op<double, double>([](double x) { return std::round(x); })};
+  env["len"] = lisp::exprfunc {func::len};
 
   return env;
 }
@@ -209,6 +219,17 @@ auto get_symbol(const lisp::expr& expr) -> std::optional<std::string>
   if (const auto* atom_p = std::get_if<lisp::atom>(&expr)) {
     if (const auto* symbol_p = std::get_if<lisp::symbol>(atom_p)) {
       return *symbol_p;
+    }
+  }
+
+  return std::nullopt;
+}
+
+auto get_number(const lisp::expr& expr) -> std::optional<lisp::number>
+{
+  if (const auto* atom_p = std::get_if<lisp::atom>(&expr)) {
+    if (const auto* number_p = std::get_if<lisp::number>(atom_p)) {
+      return *number_p;
     }
   }
 
